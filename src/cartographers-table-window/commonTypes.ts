@@ -20,6 +20,7 @@ type MasterUiState = {
 
   dragging: {
       isMouseButtonDown: boolean;
+      isMiddleMouseButtonDown?: Nullable<boolean>,
 
       isDragging: boolean;
       whatDragging: string;
@@ -104,6 +105,7 @@ type Door = {
   id: string;
 } & DoorData;
 
+
 type Wall = {
   id: string;
   roomKeys: string[];
@@ -145,4 +147,5 @@ type BlkCallback = (image: ImageData | HTMLImageElement) => void;
  */
 type BrowserData = {
     requestToClose?: Nullable<boolean>;
+    menu?: Nullable<Electron.Menu>
 }

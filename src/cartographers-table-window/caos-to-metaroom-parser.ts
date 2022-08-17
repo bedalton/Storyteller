@@ -4,6 +4,7 @@ import {ipcRenderer} from "electron";
 const crypto = require('crypto');
 const path = require("path");
 
+const { pointInRoom } = require('./potentialFactory');
 const {common} = require('./commonFunctions.js');
 const {Caos} = require('../sorcerers-table-window/parser/parser.js');
 const {TreeToText} = require('../sorcerers-table-window/tree-to-text.js');
@@ -19,6 +20,7 @@ type ParsedData = {
     height: number;
     rooms: { [id: string]: Room };
     perms: { [id: string]: Perm };
+    music: ({ x: number; y: number; track: string; })[]
 }
 
 function parseCaosForMetaroom(codeIn: string): Nullable<ParsedData> {
@@ -73,7 +75,8 @@ function parseCaosForMetaroom(codeIn: string): Nullable<ParsedData> {
                                     height: addmCommand.arguments!![3].value,
                                     background: addmCommand.arguments!![4].value + ".blk",
                                     rooms: {},
-                                    perms: {}
+                                    perms: {},
+                                    music: []
                                 }
                                 break;
                             }
@@ -154,6 +157,16 @@ function parseCaosForMetaroom(codeIn: string): Nullable<ParsedData> {
                             permeability: doorArgs[2].value
                         };
                         break;
+                        
+                    case "rmsc":
+                        assert(importedJson != null, "Music defined before metaroom", null);
+                        const args = command.arguments!!;
+                        importedJson!!.music.push({
+                            x: args[0].value - importedJson!!.x,
+                            y: args[1].value - importedJson!!.y,
+                            track: args[2].value
+                        })
+                        break
                 }
                 break;
         }
@@ -161,6 +174,28 @@ function parseCaosForMetaroom(codeIn: string): Nullable<ParsedData> {
     if (!importedJson) {
         throw new Error("Metaroom definition not found in file.");
     }
+    const rooms = importedJson.rooms;
+    
+    // Map music to rooms
+    let done: boolean;
+    const roomsUsed: string[] = [];
+    music:
+        for(const music of importedJson.music) {
+            done = false;
+            for (const roomId in rooms) {
+                if (roomsUsed.indexOf(roomId) >= 0) {
+                    continue;
+                }
+                const room = rooms[roomId];
+                if (pointInRoom(music, room, false)) {
+                    roomsUsed.push(roomId);
+                    console.log(music.track);
+                    room.music = music.track;
+                    continue music;
+                }
+            }
+        }
+    
     if (badDoors.length > 0) {
         ipcRenderer.send("show-dialog", {
             title: "Parse CAOS Metaroom",

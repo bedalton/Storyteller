@@ -806,5 +806,6 @@ function getPotentialRooms(masterUiState: MasterUiState, selection: MapSelection
 module.exports = {
     potentialFactory: {
         getPotentialRooms
-    }
+    },
+    pointInRoom
 }

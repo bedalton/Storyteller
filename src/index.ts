@@ -1,3 +1,5 @@
+import MessageBoxOptions = Electron.MessageBoxOptions;
+
 export {};
 
 import electron = require('electron');
@@ -905,6 +907,21 @@ function windowRequest(action: string, data: any = {}) {
         browserWindow.webContents.send('request-action', action, data);
     }
 }
+
+
+ipcMain.on("show-dialog", (event: Electron.IpcMainEvent, options: MessageBoxOptions & {callback?: Nullable<string>; requestId?: Nullable<string>}) => {
+    let browserWindow = ((event.sender as any).getOwnerBrowserWindow() as Electron.BrowserWindow);
+    const buttonId = dialog.showMessageBoxSync(browserWindow, options as MessageBoxOptions);
+    if (options.hasOwnProperty("callback")) {
+        event.reply(
+            options.callback,
+            {
+                id: options.hasOwnProperty("requestId") ? options['requestId'] : null,
+                clicked: buttonId
+            }
+        )
+    }
+});
 
 app.whenReady()
     .then(launchApp)

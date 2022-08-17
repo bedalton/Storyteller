@@ -215,14 +215,22 @@ function slicePotentialSideIntoPotentialLinesFromActualWalls(
 function getDoorsFromRooms(
   rooms: { [key: string]: Room },
   perms: { [key: string]: Perm }
-) {
+): Door[] {
   let doors: Door[] = [];
   for (const permKey in perms) {
       let perm = perms[permKey];
       //console.log(perm);
   //perms.forEach((perm, i) => {
       let roomA = rooms[perm.rooms.a];
+      if (roomA == null) {
+          console.error(`Room A[${perm.rooms.a}] is null for get doors from rooms`);
+          continue;
+      }
       let roomB = rooms[perm.rooms.b];
+      if (roomB == null) {
+          console.error(`Room B[${perm.rooms.a}] is null for get doors from rooms`);
+          continue;
+      }
 
       //console.log(rooms);
       //console.log(perms);

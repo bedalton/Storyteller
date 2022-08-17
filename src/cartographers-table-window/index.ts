@@ -562,10 +562,31 @@ function displayFiles(files: { fileRef: FileRef; contents: string }[]) {
             fileContents = file.contents;
             break;
         case ".cos":
-            fileContents = parseCaosForMetaroom(file.contents);
+            try {
+                fileContents = parseCaosForMetaroom(file.contents);
+            } catch (e) {
+                const messageFragment = (e instanceof Error) ? (e.message) : (typeof e === "string" ? e : null);
+                const message = "Failed to parse CAOS from metaroom. " + (messageFragment ?? "");
+                if (e instanceof Error) {
+                    console.error(message + "\n" + e.stack)
+                } else {
+                    console.error()
+                }
+                ipcRenderer.send("show-dialog", {
+                    title: "Parse CAOS",
+                    message: message.trim(),
+                    buttons: ["OK"]
+                });
+                return;
+            }
             break;
         default:
-            throw new Error(`Unknown file type: ${JSON.stringify(file.fileRef)}`);
+            ipcRenderer.send("show-dialog", {
+                title: "Open File Failed",
+                message: `Unknown file type: ${JSON.stringify(file.fileRef)}`,
+                buttons: ["OK"]
+            });
+            return;
     }
 
     loadMetaroom(fileContents);

@@ -510,12 +510,12 @@ async function permChange(newPerm: number) {
     redrawMetaroom();
 }
 
-async function xChange(value: number) {
-    dataStructures.metaroomDisk!.x = value;
+async function xChange(value: number|string) {
+    dataStructures.metaroomDisk!.x = typeof value === 'number' ? value : parseInt(value, 10);
 }
 
-async function yChange(value: number) {
-    dataStructures.metaroomDisk!.y = value;
+async function yChange(value: number|string) {
+    dataStructures.metaroomDisk!.y = typeof value === 'number' ? value : parseInt(value, 10);
 }
 
 async function musicChange(id: string, value: string) {

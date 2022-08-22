@@ -1,4 +1,3 @@
-const assert = require('assert');
 const { ipcRenderer } = require('electron');
 const crypto = require('crypto');
 const path = require("path");
@@ -162,6 +161,8 @@ class FileHelper {
   }
 
   async exportToCaos() {
+      const currentRef = Object.assign({},this._currentFileRef);
+      const fileNeedsSaving = this._currentFileNeedsSaving;
       await this._saveFileAs({
           title: "Export CAOS file",
           defaultPath : '%HOMEPATH%/Documents/',
@@ -173,6 +174,10 @@ class FileHelper {
       "caos",
       "Latin1"
     );
+      this._currentFileRef = currentRef;
+      this._currentFileNeedsSaving = fileNeedsSaving;
+      this._updateTitle();
+      console.log(this._currentFileRef);
   }
 
   async selectBackgroundFile() {
@@ -236,14 +241,14 @@ class FileHelper {
   async _saveFile(options, format, encoding) {
       if (!this._currentFileRef.fileExistsOnDisk) {
           options.defaultPath = path.join(this._currentFileRef.dir, this._currentFileRef.name);
-          let newSaveeFile = (await this.getNewSaveFilePromise(options));
-          if (!newSaveeFile.continue) {
+          let newSaveFile = (await this.getNewSaveFilePromise(options));
+          if (!newSaveFile.continue) {
               return {continue: false};
           }
-          let newPath = newSaveeFile.fileRef;
-          this._currentFileRef.dir = newSaveeFile.fileRef.dir;
-          this._currentFileRef.name = newSaveeFile.fileRef.name;
-          this._currentFileRef.type = newSaveeFile.fileRef.type;
+          let newPath = newSaveFile.fileRef;
+          this._currentFileRef.dir = newSaveFile.fileRef.dir;
+          this._currentFileRef.name = newSaveFile.fileRef.name;
+          this._currentFileRef.type = newSaveFile.fileRef.type;
       }
       return this._reallySaveFile(this._currentFileRef, format, encoding);
   }
